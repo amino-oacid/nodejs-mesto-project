@@ -26,7 +26,4 @@ app.use((req: AuthorizedRequest, res: Response, next: NextFunction) => {
 app.use(usersRouter);
 app.use(cardsRouter);
 
-app.listen(SERVER_PORT, () => {
-  console.log(`app listening on PORT ${SERVER_PORT}`);
-  console.log(`app connecting to db ${DB_URL}`);
-});
+app.listen(SERVER_PORT);
