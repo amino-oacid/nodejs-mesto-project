@@ -1,41 +1,37 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Error as MongooseError } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
-import { statusCodes, errorMessages, AuthorizedRequest } from '../types';
-import { JWT_SECRET } from '../config';
+import { statusCodes, CustomError } from '../types';
+import { AuthorizedRequest, JWT_SECRET } from '../config';
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
     return res.status(statusCodes.ok).send(users);
-  } catch {
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const getUser = async (req: Request, res: Response) => {
+export const getUser = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params;
 
   try {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(user);
-  } catch {
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const getCurrentUserInfo = async (req: AuthorizedRequest, res: Response) => {
+export const getMem = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const userId = req.user?._id;
   console.log(`getCurrentUserInfo ${userId}`);
 
@@ -43,18 +39,16 @@ export const getCurrentUserInfo = async (req: AuthorizedRequest, res: Response) 
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(user);
-  } catch {
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const {
     name,
     about,
@@ -74,20 +68,20 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     return res.status(statusCodes.created).send(user);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    if (error.name === 'MongoError' && error.code === 11000) {
+      return next(CustomError.BadRequest());
+    }
+
+    return next(error);
   }
 };
 
-export const loginUser = async (req: AuthorizedRequest, res: Response) => {
+export const loginUser = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   try {
@@ -97,11 +91,15 @@ export const loginUser = async (req: AuthorizedRequest, res: Response) => {
       token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
     });
   } catch (error) {
-    return res.status(statusCodes.unauthorized).send({ message: errorMessages.unauthorizedError });
+    return next(error);
   }
 };
 
-export const updateUserProfile = async (req: AuthorizedRequest, res: Response) => {
+export const updateUserProfile = async (
+  req: AuthorizedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const { name, about } = req.body;
   const userId = req.user?._id;
 
@@ -116,24 +114,24 @@ export const updateUserProfile = async (req: AuthorizedRequest, res: Response) =
     );
 
     if (!updatedUser) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(updatedUser);
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    return next(error);
   }
 };
 
-export const updateUserAvatar = async (req: AuthorizedRequest, res: Response) => {
+export const updateUserAvatar = async (
+  req: AuthorizedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const { avatar } = req.body;
   const userId = req.user?._id;
 
@@ -148,19 +146,15 @@ export const updateUserAvatar = async (req: AuthorizedRequest, res: Response) =>
     );
 
     if (!updatedUser) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(updatedUser);
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    return next(error);
   }
 };

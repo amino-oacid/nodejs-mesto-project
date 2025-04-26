@@ -5,6 +5,7 @@ import router from './routes/index';
 import { createUser, loginUser } from './controllers/users';
 import authMiddleware from './middlewares/auth';
 import { requestLogger, errorLogger } from './middlewares/logger';
+import errorMiddleware from './middlewares/errors';
 
 const { SERVER_PORT, DB_URL } = process.env;
 
@@ -14,16 +15,6 @@ if (!SERVER_PORT) throw new Error('Ошибка, не найден порт');
 const app = express();
 app.use(express.json());
 
-/*
-// Временное решение авторизации - middleware добавляет в каждый запрос объект user
-app.use((req: AuthorizedRequest, res: Response, next: NextFunction) => {
-  req.user = {
-    _id: '680684602777f52fd39521f5', // кто бы ни создал карточку, в базе у неё будет один автор
-  };
-
-  next();
-});
-*/
 app.use(requestLogger);
 
 app.post('/signin', loginUser);
@@ -32,6 +23,8 @@ app.use(authMiddleware);
 app.use('/', router);
 
 app.use(errorLogger);
+
+app.use(errorMiddleware);
 
 mongoose.connect(DB_URL)
   .then(() => {

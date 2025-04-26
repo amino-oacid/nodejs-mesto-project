@@ -1,5 +1,3 @@
-import { Request } from 'express';
-
 export const statusCodes = {
   ok: 200,
   created: 201,
@@ -16,8 +14,31 @@ export const errorMessages = {
   internalServerError: 'Ошибка на сервере',
 };
 
-export interface AuthorizedRequest extends Request {
-  user?: {
-    _id: string;
-  };
+export interface IError extends Error {
+  statusCode?: number;
+}
+
+export class CustomError extends Error implements IError {
+  public statusCode: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.statusCode = status;
+  }
+
+  static NotFoundError() {
+    return new CustomError(statusCodes.notFound, errorMessages.notFoundError);
+  }
+
+  static Unauthorized() {
+    return new CustomError(statusCodes.unauthorized, errorMessages.unauthorizedError);
+  }
+
+  static BadRequest() {
+    return new CustomError(statusCodes.badRequest, errorMessages.badRequestError);
+  }
+
+  static InternalError() {
+    return new CustomError(statusCodes.internalServerError, errorMessages.internalServerError);
+  }
 }

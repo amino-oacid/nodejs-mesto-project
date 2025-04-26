@@ -1,20 +1,19 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Error as MongooseError, Schema } from 'mongoose';
 import Card from '../models/card';
-import { AuthorizedRequest, statusCodes, errorMessages } from '../types';
+import { statusCodes, CustomError } from '../types';
+import { AuthorizedRequest } from '../config';
 
-export const getCards = async (req: Request, res: Response) => {
+export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await Card.find({});
     return res.status(statusCodes.ok).send(cards);
-  } catch {
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+  } catch (error) {
+    return next(error);
   }
 };
 
-export const createCard = async (req: AuthorizedRequest, res: Response) => {
+export const createCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   const owner = req.user?._id;
 
@@ -24,42 +23,36 @@ export const createCard = async (req: AuthorizedRequest, res: Response) => {
     return res.status(statusCodes.created).send(card);
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    return next(error);
   }
 };
 
-export const deleteCard = async (req: AuthorizedRequest, res: Response) => {
+export const deleteCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
 
   try {
     const card = await Card.findById(cardId);
 
     if (!card) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     if (card?.owner.toString() !== req.user?._id) {
-      return res.status(statusCodes.badRequest).send({ message: 'Вы не можете удалить карточку другого пользователя' });
+      throw CustomError.BadRequest();
     }
 
     const cardToDelete = await card?.deleteOne();
 
     return res.status(statusCodes.ok).send(cardToDelete);
-  } catch {
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const likeCard = async (req: AuthorizedRequest, res: Response) => {
+export const likeCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
 
@@ -79,24 +72,20 @@ export const likeCard = async (req: AuthorizedRequest, res: Response) => {
     );
 
     if (!likedCard) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(likedCard);
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    return next(error);
   }
 };
 
-export const dislikeCard = async (req: AuthorizedRequest, res: Response) => {
+export const dislikeCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id as Schema.Types.ObjectId | undefined;
 
@@ -116,19 +105,15 @@ export const dislikeCard = async (req: AuthorizedRequest, res: Response) => {
     );
 
     if (!dislikedCard) {
-      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+      throw CustomError.NotFoundError();
     }
 
     return res.status(statusCodes.ok).send(dislikedCard);
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
-      return res
-        .status(statusCodes.badRequest)
-        .send({ message: errorMessages.badRequestError + error.message });
+      return next(CustomError.BadRequest());
     }
 
-    return res
-      .status(statusCodes.internalServerError)
-      .send({ message: errorMessages.internalServerError });
+    return next(error);
   }
 };

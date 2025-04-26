@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { Request } from 'express';
 
 const crypto = require('crypto');
 
@@ -11,4 +12,10 @@ const defaultUser = {
   avatar: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
 };
 
-export { JWT_SECRET, defaultUser };
+interface AuthorizedRequest extends Request {
+  user?: {
+    _id: string;
+  };
+}
+
+export { JWT_SECRET, defaultUser, AuthorizedRequest };
