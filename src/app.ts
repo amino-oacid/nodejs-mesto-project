@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-// import { AuthorizedRequest } from './types';
 import router from './routes/index';
 import { createUser, loginUser } from './controllers/users';
 import authMiddleware from './middlewares/auth';
+import { requestLogger, errorLogger } from './middlewares/logger';
 
 const { SERVER_PORT, DB_URL } = process.env;
 
@@ -24,11 +24,14 @@ app.use((req: AuthorizedRequest, res: Response, next: NextFunction) => {
   next();
 });
 */
+app.use(requestLogger);
 
 app.post('/signin', loginUser);
 app.post('/signup', createUser);
 app.use(authMiddleware);
 app.use('/', router);
+
+app.use(errorLogger);
 
 mongoose.connect(DB_URL)
   .then(() => {
