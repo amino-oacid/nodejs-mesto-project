@@ -10,7 +10,7 @@ interface SessionRequest extends Request {
 const extractBearerToken = (authorization: string) => authorization.replace('Bearer ', '');
 
 const authMiddleware = async (req: SessionRequest, res: Response, next: NextFunction) => {
-  const { authorization } = req.body;
+  const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
     return res.status(statusCodes.unauthorized).send({ message: errorMessages.unauthorizedError });
@@ -26,7 +26,6 @@ const authMiddleware = async (req: SessionRequest, res: Response, next: NextFunc
   }
 
   req.user = payload;
-  console.log(req.user);
 
   next();
 };

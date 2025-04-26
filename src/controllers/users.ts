@@ -85,10 +85,16 @@ export const loginUser = async (req: AuthorizedRequest, res: Response, next: Nex
 
   try {
     const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    const maxAge = 3600000 * 24 * 7;
 
-    return res.send({
-      token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: true,
+      maxAge,
     });
+
+    return res.status(statusCodes.ok).send({ message: 'Аутентификация пройдена' });
   } catch (error) {
     return next(error);
   }
