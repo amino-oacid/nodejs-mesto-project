@@ -31,6 +31,9 @@
     },
     "rules": {
         "linebreak-style": ["error", "windows"],
+        "arrow-parens": "off",
+        "consistent-return": "off",
+        "no-unused-vars": "off",
         "no-underscore-dangle": "off",
         "import/extensions": [
             "error",

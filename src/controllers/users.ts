@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import { Error as MongooseError } from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import User from '../models/user';
 import { statusCodes, errorMessages, AuthorizedRequest } from '../types';
+import { JWT_SECRET } from '../config';
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -32,11 +35,43 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
-  const { name, about, avatar } = req.body;
+export const getCurrentUserInfo = async (req: AuthorizedRequest, res: Response) => {
+  const userId = req.user?._id;
+  console.log(`getCurrentUserInfo ${userId}`);
 
   try {
-    const user = await User.create({ name, about, avatar });
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(statusCodes.notFound).send({ message: errorMessages.notFoundError });
+    }
+
+    return res.status(statusCodes.ok).send(user);
+  } catch {
+    return res
+      .status(statusCodes.internalServerError)
+      .send({ message: errorMessages.internalServerError });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
+  try {
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hashPassword,
+    });
 
     return res.status(statusCodes.created).send(user);
   } catch (error) {
@@ -49,6 +84,20 @@ export const createUser = async (req: Request, res: Response) => {
     return res
       .status(statusCodes.internalServerError)
       .send({ message: errorMessages.internalServerError });
+  }
+};
+
+export const loginUser = async (req: AuthorizedRequest, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findUserByCredentials(email, password);
+
+    return res.send({
+      token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
+    });
+  } catch (error) {
+    return res.status(statusCodes.unauthorized).send({ message: errorMessages.unauthorizedError });
   }
 };
 
