@@ -5,7 +5,9 @@ import router from './routes/index';
 import { createUser, loginUser } from './controllers/users';
 import authMiddleware from './middlewares/auth';
 import { requestLogger, errorLogger } from './middlewares/logger';
-import errorMiddleware from './middlewares/errors';
+import errorsMiddleware from './middlewares/errors';
+import validateRequest from './middlewares/validate-request';
+import { validateCreateUserSchema, validateLoginSchema } from './validators/user-validator';
 
 const { SERVER_PORT, DB_URL } = process.env;
 
@@ -17,14 +19,14 @@ app.use(express.json());
 
 app.use(requestLogger);
 
-app.post('/signin', loginUser);
-app.post('/signup', createUser);
+app.post('/signin', validateRequest(validateLoginSchema), loginUser);
+app.post('/signup', validateRequest(validateCreateUserSchema), createUser);
 app.use(authMiddleware);
 app.use('/', router);
 
 app.use(errorLogger);
 
-app.use(errorMiddleware);
+app.use(errorsMiddleware);
 
 mongoose.connect(DB_URL)
   .then(() => {

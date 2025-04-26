@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Error as MongooseError, Schema } from 'mongoose';
 import Card from '../models/card';
-import { statusCodes, CustomError } from '../types';
+import { statusCodes, CustomError } from '../custom-error';
 import { AuthorizedRequest } from '../config';
 
 export const getCards = async (req: Request, res: Response, next: NextFunction) => {

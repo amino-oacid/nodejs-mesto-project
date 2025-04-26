@@ -1,7 +1,7 @@
 import mongoose, { model, Schema } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
-import { errorMessages } from '../types';
+import { errorMessages } from '../custom-error';
 import { defaultUser } from '../config';
 
 export type TUser = {
@@ -33,6 +33,13 @@ const userSchema = new Schema<TUser, UserModel>({
   avatar: {
     type: String,
     default: defaultUser.avatar,
+    validate: {
+      validator(avatar: string) {
+        const regexp = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+        return regexp.test(avatar);
+      },
+      message: 'Некорректный формат ссылки на аватар',
+    },
   },
   email: {
     type: String,
@@ -46,6 +53,7 @@ const userSchema = new Schema<TUser, UserModel>({
   password: {
     type: String,
     required: true,
+    minlength: 8,
     select: false,
   },
 }, { versionKey: false });

@@ -4,15 +4,17 @@ import {
   getUser,
   updateUserProfile,
   updateUserAvatar,
-  getMem,
+  getCurrentUser,
 } from '../controllers/users';
+import validateRequest from '../middlewares/validate-request';
+import { validateUpdateAvatarSchema, validateUpdateUserProfileSchema, validateUserIdSchema } from '../validators/user-validator';
 
 const usersRouter = Router();
 
 usersRouter.get('/', getUsers);
-usersRouter.get('/:userId', getUser);
-usersRouter.get('/me', getMem);
-usersRouter.patch('/me', updateUserProfile);
-usersRouter.patch('/me/avatar', updateUserAvatar);
+usersRouter.get('/me', getCurrentUser);
+usersRouter.patch('/me', validateRequest(validateUpdateUserProfileSchema), updateUserProfile);
+usersRouter.patch('/me/avatar', validateRequest(validateUpdateAvatarSchema), updateUserAvatar);
+usersRouter.get('/:userId', validateRequest(validateUserIdSchema), getUser);
 
 export default usersRouter;

@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomError, IError } from '../types';
+import { CustomError, IError } from '../custom-error';
 
-const errorMiddleware = (error: IError, req: Request, res: Response, next: NextFunction) => {
+const errorsMiddleware = (error: IError, req: Request, res: Response, next: NextFunction) => {
   let statusCode = error.statusCode || 400;
-  console.log(error.statusCode);
   let message = error.message || 'Ошибка на сервере';
 
   if (error instanceof CustomError) {
@@ -14,4 +13,4 @@ const errorMiddleware = (error: IError, req: Request, res: Response, next: NextF
   res.status(statusCode).send({ message });
 };
 
-export default errorMiddleware;
+export default errorsMiddleware;

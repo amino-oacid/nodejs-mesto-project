@@ -3,7 +3,7 @@ import { Error as MongooseError } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
-import { statusCodes, CustomError } from '../types';
+import { statusCodes, CustomError } from '../custom-error';
 import { AuthorizedRequest, JWT_SECRET } from '../config';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
@@ -31,9 +31,8 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-export const getMem = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
+export const getCurrentUser = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
   const userId = req.user?._id;
-  console.log(`getCurrentUserInfo ${userId}`);
 
   try {
     const user = await User.findById(userId);
