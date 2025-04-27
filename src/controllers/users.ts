@@ -108,31 +108,6 @@ export const updateUserProfile = async (
 ) => {
   const updateUserInfo = true;
   updateUserMiddleware(req, res, next, updateUserInfo);
-  // const { name, about } = req.body;
-  // const userId = req.user?._id;
-
-  // try {
-  //   const updatedUser = await User.findByIdAndUpdate(
-  //     userId,
-  //     { name, about },
-  //     {
-  //       new: true, // обработчик then получит на вход обновлённую запись
-  //       runValidators: true, // данные будут валидированы перед изменением
-  //     },
-  //   );
-
-  //   if (!updatedUser) {
-  //     throw CustomError.NotFoundError();
-  //   }
-
-  //   return res.status(statusCodes.ok).send(updatedUser);
-  // } catch (error) {
-  //   if (error instanceof MongooseError.ValidationError) {
-  //     return next(CustomError.BadRequest());
-  //   }
-
-  //   return next(error);
-  // }
 };
 
 export const updateUserAvatar = async (
@@ -142,29 +117,4 @@ export const updateUserAvatar = async (
 ) => {
   const updateUserInfo = false;
   updateUserMiddleware(req, res, next, updateUserInfo);
-  // const { avatar } = req.body;
-  // const userId = req.user?._id;
-
-  // try {
-  //   const updatedUser = await User.findByIdAndUpdate(
-  //     userId,
-  //     { avatar },
-  //     {
-  //       new: true, // обработчик then получит на вход обновлённую запись
-  //       runValidators: true, // данные будут валидированы перед изменением
-  //     },
-  //   );
-
-  //   if (!updatedUser) {
-  //     throw CustomError.NotFoundError();
-  //   }
-
-  //   return res.status(statusCodes.ok).send(updatedUser);
-  // } catch (error) {
-  //   if (error instanceof MongooseError.ValidationError) {
-  //     return next(CustomError.BadRequest());
-  //   }
-
-  //   return next(error);
-  // }
 };
