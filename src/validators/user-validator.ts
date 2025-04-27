@@ -4,7 +4,8 @@ export const validateUserIdSchema = z.object({
   params: z.object({
     userId: z
       .string()
-      .length(24),
+      .length(24)
+      .regex(/^[a-f0-9]+$/),
   }),
 });
 

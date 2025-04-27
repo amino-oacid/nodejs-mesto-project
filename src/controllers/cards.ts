@@ -3,6 +3,7 @@ import { Error as MongooseError, Schema } from 'mongoose';
 import Card from '../models/card';
 import { statusCodes, CustomError } from '../custom-error';
 import { AuthorizedRequest } from '../config';
+import updateLikeCardMiddleware from '../middlewares/update-like-card';
 
 export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -53,67 +54,71 @@ export const deleteCard = async (req: AuthorizedRequest, res: Response, next: Ne
 };
 
 export const likeCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
-  const { cardId } = req.params;
-  const userId = req.user?._id;
+  const putLikeCard = true;
+  updateLikeCardMiddleware(req, res, next, putLikeCard);
+  // const { cardId } = req.params;
+  // const userId = req.user?._id;
 
-  try {
-    const likedCard = await Card.findByIdAndUpdate(
-      cardId,
-      {
-        $addToSet:
-          {
-            likes: userId,
-          },
-      }, // добавить _id в массив, если его там нет
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+  // try {
+  //   const likedCard = await Card.findByIdAndUpdate(
+  //     cardId,
+  //     {
+  //       $addToSet:
+  //         {
+  //           likes: userId,
+  //         },
+  //     }, // добавить _id в массив, если его там нет
+  //     {
+  //       new: true,
+  //       runValidators: true,
+  //     },
+  //   );
 
-    if (!likedCard) {
-      throw CustomError.NotFoundError();
-    }
+  //   if (!likedCard) {
+  //     throw CustomError.NotFoundError();
+  //   }
 
-    return res.status(statusCodes.ok).send(likedCard);
-  } catch (error) {
-    if (error instanceof MongooseError.ValidationError) {
-      return next(CustomError.BadRequest());
-    }
+  //   return res.status(statusCodes.ok).send(likedCard);
+  // } catch (error) {
+  //   if (error instanceof MongooseError.ValidationError) {
+  //     return next(CustomError.BadRequest());
+  //   }
 
-    return next(error);
-  }
+  //   return next(error);
+  // }
 };
 
 export const dislikeCard = async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
-  const { cardId } = req.params;
-  const userId = req.user?._id as Schema.Types.ObjectId | undefined;
+  const putLikeCard = false;
+  updateLikeCardMiddleware(req, res, next, putLikeCard);
+  // const { cardId } = req.params;
+  // const userId = req.user?._id as Schema.Types.ObjectId | undefined;
 
-  try {
-    const dislikedCard = await Card.findByIdAndUpdate(
-      cardId,
-      {
-        $pull:
-          {
-            likes: userId,
-          },
-      }, // убрать _id из массива
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+  // try {
+  //   const dislikedCard = await Card.findByIdAndUpdate(
+  //     cardId,
+  //     {
+  //       $pull:
+  //         {
+  //           likes: userId,
+  //         },
+  //     }, // убрать _id из массива
+  //     {
+  //       new: true,
+  //       runValidators: true,
+  //     },
+  //   );
 
-    if (!dislikedCard) {
-      throw CustomError.NotFoundError();
-    }
+  //   if (!dislikedCard) {
+  //     throw CustomError.NotFoundError();
+  //   }
 
-    return res.status(statusCodes.ok).send(dislikedCard);
-  } catch (error) {
-    if (error instanceof MongooseError.ValidationError) {
-      return next(CustomError.BadRequest());
-    }
+  //   return res.status(statusCodes.ok).send(dislikedCard);
+  // } catch (error) {
+  //   if (error instanceof MongooseError.ValidationError) {
+  //     return next(CustomError.BadRequest());
+  //   }
 
-    return next(error);
-  }
+  //   return next(error);
+  // }
 };

@@ -11,7 +11,7 @@ export const errorMessages = {
   badRequestError: 'Запрос составлен неправильно',
   unauthorizedError: 'Пользователь не авторизован',
   notFoundError: 'Запрашиваемый ресурс не найден',
-  internalServerError: 'Ошибка на сервере',
+  internalServerError: 'На сервере произошла ошибка',
 };
 
 export interface IError extends Error {

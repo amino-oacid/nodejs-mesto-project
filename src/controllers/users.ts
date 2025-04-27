@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 import { statusCodes, CustomError } from '../custom-error';
 import { AuthorizedRequest, JWT_SECRET } from '../config';
+import updateUserMiddleware from '../middlewares/update-user';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -105,31 +106,33 @@ export const updateUserProfile = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { name, about } = req.body;
-  const userId = req.user?._id;
+  const updateUserInfo = true;
+  updateUserMiddleware(req, res, next, updateUserInfo);
+  // const { name, about } = req.body;
+  // const userId = req.user?._id;
 
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { name, about },
-      {
-        new: true, // обработчик then получит на вход обновлённую запись
-        runValidators: true, // данные будут валидированы перед изменением
-      },
-    );
+  // try {
+  //   const updatedUser = await User.findByIdAndUpdate(
+  //     userId,
+  //     { name, about },
+  //     {
+  //       new: true, // обработчик then получит на вход обновлённую запись
+  //       runValidators: true, // данные будут валидированы перед изменением
+  //     },
+  //   );
 
-    if (!updatedUser) {
-      throw CustomError.NotFoundError();
-    }
+  //   if (!updatedUser) {
+  //     throw CustomError.NotFoundError();
+  //   }
 
-    return res.status(statusCodes.ok).send(updatedUser);
-  } catch (error) {
-    if (error instanceof MongooseError.ValidationError) {
-      return next(CustomError.BadRequest());
-    }
+  //   return res.status(statusCodes.ok).send(updatedUser);
+  // } catch (error) {
+  //   if (error instanceof MongooseError.ValidationError) {
+  //     return next(CustomError.BadRequest());
+  //   }
 
-    return next(error);
-  }
+  //   return next(error);
+  // }
 };
 
 export const updateUserAvatar = async (
@@ -137,29 +140,31 @@ export const updateUserAvatar = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { avatar } = req.body;
-  const userId = req.user?._id;
+  const updateUserInfo = false;
+  updateUserMiddleware(req, res, next, updateUserInfo);
+  // const { avatar } = req.body;
+  // const userId = req.user?._id;
 
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { avatar },
-      {
-        new: true, // обработчик then получит на вход обновлённую запись
-        runValidators: true, // данные будут валидированы перед изменением
-      },
-    );
+  // try {
+  //   const updatedUser = await User.findByIdAndUpdate(
+  //     userId,
+  //     { avatar },
+  //     {
+  //       new: true, // обработчик then получит на вход обновлённую запись
+  //       runValidators: true, // данные будут валидированы перед изменением
+  //     },
+  //   );
 
-    if (!updatedUser) {
-      throw CustomError.NotFoundError();
-    }
+  //   if (!updatedUser) {
+  //     throw CustomError.NotFoundError();
+  //   }
 
-    return res.status(statusCodes.ok).send(updatedUser);
-  } catch (error) {
-    if (error instanceof MongooseError.ValidationError) {
-      return next(CustomError.BadRequest());
-    }
+  //   return res.status(statusCodes.ok).send(updatedUser);
+  // } catch (error) {
+  //   if (error instanceof MongooseError.ValidationError) {
+  //     return next(CustomError.BadRequest());
+  //   }
 
-    return next(error);
-  }
+  //   return next(error);
+  // }
 };

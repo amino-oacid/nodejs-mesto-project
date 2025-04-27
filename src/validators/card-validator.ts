@@ -14,6 +14,7 @@ export const validateCardIdSchema = z.object({
   params: z.object({
     cardId: z
       .string()
-      .length(24),
+      .length(24)
+      .regex(/^[a-f0-9]+$/),
   }),
 });
